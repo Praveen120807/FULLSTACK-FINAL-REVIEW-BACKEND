@@ -24,14 +24,18 @@ private UserRepository userRepository;
 private PasswordEncoder passwordEncoder; // 🔥 IMPORTANT
 
 @Override
+@Autowired
+private PasswordEncoder passwordEncoder;
+
+@Override
 public String userRegistration(User user) 
 {
-    // 🔥 Encode password before saving
-    user.setPassword(passwordEncoder.encode(user.getPassword()));
+    user.setPassword(passwordEncoder.encode(user.getPassword())); // 🔥 encode
     userRepository.save(user);
     return "User registered successfully";
 }
 
+@Override
 @Override
 public User verifyUserLogin(String username, String pwd) 
 {
