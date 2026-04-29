@@ -10,7 +10,7 @@ import io.jsonwebtoken.*;
 @Component
 public class JwtUtil {
 
-```
+
 private String SECRET_KEY = "secret123";
 
 public String extractUsername(String token) {
@@ -45,6 +45,6 @@ public String generateToken(String username) {
             .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
             .compact();
 }
-```
+
 
 }
