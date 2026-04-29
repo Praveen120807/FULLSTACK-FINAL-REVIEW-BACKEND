@@ -22,4 +22,9 @@ public class UserController {
     public String signup(@RequestBody User user) {
         return userService.userRegistration(user);
     }
+
+    @GetMapping("/{username}")
+    public User getUser(@PathVariable String username) {
+        return userService.getUserByUsername(username);
+    }
 }
