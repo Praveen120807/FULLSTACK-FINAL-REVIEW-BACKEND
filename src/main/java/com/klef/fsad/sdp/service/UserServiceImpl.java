@@ -21,7 +21,8 @@ public class UserServiceImpl implements UserService {
 private UserRepository userRepository;
 
 @Autowired
-private PasswordEncoder passwordEncoder; // 🔥 IMPORTANT
+@org.springframework.context.annotation.Lazy
+private PasswordEncoder passwordEncoder;
 
 @Override
 public String userRegistration(User user) {
