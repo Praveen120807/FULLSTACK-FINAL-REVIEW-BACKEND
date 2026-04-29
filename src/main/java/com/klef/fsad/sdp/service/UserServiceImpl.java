@@ -26,9 +26,14 @@ private PasswordEncoder passwordEncoder;
 
 @Override
 public String userRegistration(User user) {
-    // 🔥 Encode password before saving
+
+    if (user.getUsername() == null || user.getPassword() == null) {
+        return "Username or Password missing";
+    }
+
     user.setPassword(passwordEncoder.encode(user.getPassword()));
     userRepository.save(user);
+
     return "User registered successfully";
 }
 
