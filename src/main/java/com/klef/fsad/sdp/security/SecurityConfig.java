@@ -14,6 +14,7 @@ public class SecurityConfig {
 
 
 @Autowired
+@org.springframework.context.annotation.Lazy
 private JwtFilter jwtFilter;
 
 @Bean
