@@ -6,11 +6,9 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/user")
 public class UserController {
 
-
-@GetMapping
-public String testUser() {
-    return "User API Working 🔥";
-}
-
+    @GetMapping
+    public String testUser() {
+        return "User API Working 🔥";
+    }
 
 }
