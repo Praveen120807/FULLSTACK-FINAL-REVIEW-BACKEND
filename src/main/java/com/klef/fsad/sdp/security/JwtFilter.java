@@ -20,7 +20,7 @@ import jakarta.servlet.http.HttpServletResponse;
 @Component
 public class JwtFilter extends OncePerRequestFilter {
 
-```
+
 @Autowired
 private JwtUtil jwtUtil;
 
@@ -66,6 +66,6 @@ protected void doFilterInternal(HttpServletRequest request,
 
     filterChain.doFilter(request, response);
 }
-```
+
 
 }
