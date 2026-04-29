@@ -29,8 +29,8 @@ private UserService userService;
 
 @Override
 protected void doFilterInternal(HttpServletRequest request,
-                                HttpServletResponse response,
-                                FilterChain filterChain)
+                               HttpServletResponse response,
+                               FilterChain filterChain)
         throws ServletException, IOException {
 
     final String authHeader = request.getHeader("Authorization");
@@ -38,13 +38,11 @@ protected void doFilterInternal(HttpServletRequest request,
     String username = null;
     String token = null;
 
-    // 🔥 Extract token
     if (authHeader != null && authHeader.startsWith("Bearer ")) {
         token = authHeader.substring(7);
         username = jwtUtil.extractUsername(token);
     }
 
-    // 🔥 Set authentication
     if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
         UserDetails userDetails = userService.loadUserByUsername(username);
