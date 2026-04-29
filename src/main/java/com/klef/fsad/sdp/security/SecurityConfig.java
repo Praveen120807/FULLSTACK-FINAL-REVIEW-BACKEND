@@ -14,7 +14,7 @@ public class SecurityConfig {
 
 ```
 @Autowired
-private JwtFilter jwtFilter; // 🔥 IMPORTANT
+private JwtFilter jwtFilter;
 
 @Bean
 public PasswordEncoder passwordEncoder() {
@@ -29,7 +29,6 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
             .requestMatchers("/auth/**", "/user/signup").permitAll()
             .anyRequest().authenticated()
         )
-        // 🔥 ADD THIS LINE (VERY IMPORTANT)
         .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
     return http.build();
