@@ -1,7 +1,6 @@
 package com.klef.fsad.sdp.security;
 
 import java.io.IOException;
-import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -19,110 +18,56 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 @Component
-public class JwtFilter extends OncePerRequestFilter 
-{
-    @Autowired
-    private JwtUtil jwtUtil;
+public class JwtFilter extends OncePerRequestFilter {
 
-    @Autowired
-    private UserService service;
+```
+@Autowired
+private JwtUtil jwtUtil;
 
-    @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                   HttpServletResponse response,
-                                   FilterChain chain)
-            throws ServletException, IOException 
-    {
-        String path = request.getServletPath();
+@Autowired
+private UserService userService;
 
-        // ✅ Public APIs (no token required)
-        List<String> publicPaths = List.of(
-                "/auth",
-                "/swagger-ui",
-                "/v3/api-docs",
-                "/swagger-ui.html",
-                "/user/signup",
-                "/admin"
-        );
+@Override
+protected void doFilterInternal(HttpServletRequest request,
+                                HttpServletResponse response,
+                                FilterChain filterChain)
+        throws ServletException, IOException {
 
-        boolean isPublic = publicPaths.stream()
-                .anyMatch(path::startsWith);
+    final String authHeader = request.getHeader("Authorization");
 
-        if (isPublic) 
-        {
-            chain.doFilter(request, response);
-            return;
-        }
+    String username = null;
+    String token = null;
 
-        // ✅ Get Authorization header
-        String header = request.getHeader("Authorization");
+    // 🔥 Extract token
+    if (authHeader != null && authHeader.startsWith("Bearer ")) {
+        token = authHeader.substring(7);
+        username = jwtUtil.extractUsername(token);
+    }
 
-        if (header == null || !header.startsWith("Bearer ")) 
-        {
-            sendErrorResponse(response, 401, "Authorization header missing or invalid");
-            return;
-        }
+    // 🔥 Set authentication
+    if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-        String token = header.substring(7).trim();
+        UserDetails userDetails = userService.loadUserByUsername(username);
 
-        try 
-        {
-            String username = jwtUtil.extractUsername(token);
+        if (jwtUtil.validateToken(token, userDetails)) {
 
-            if (username == null) 
-            {
-                sendErrorResponse(response, 401, "Invalid token: Username not found");
-                return;
-            }
-
-            if (SecurityContextHolder.getContext().getAuthentication() == null) 
-            {
-                UserDetails userDetails = service.loadUserByUsername(username);
-
-                if (userDetails != null && jwtUtil.validateToken(token))
-                {
-                    UsernamePasswordAuthenticationToken authToken =
-                            new UsernamePasswordAuthenticationToken(
-                                    userDetails,
-                                    null,
-                                    userDetails.getAuthorities()
-                            );
-
-                    authToken.setDetails(
-                            new WebAuthenticationDetailsSource().buildDetails(request)
+            UsernamePasswordAuthenticationToken authToken =
+                    new UsernamePasswordAuthenticationToken(
+                            userDetails,
+                            null,
+                            userDetails.getAuthorities()
                     );
 
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
-                } 
-                else 
-                {
-                    sendErrorResponse(response, 401, "Invalid or expired token");
-                    return;
-                }
-            }
-        } 
-        catch (Exception e) 
-        {
-            sendErrorResponse(response, 401, "Invalid token: " + e.getMessage());
-            return;
+            authToken.setDetails(
+                    new WebAuthenticationDetailsSource().buildDetails(request)
+            );
+
+            SecurityContextHolder.getContext().setAuthentication(authToken);
         }
-
-        // ✅ Continue request
-        chain.doFilter(request, response);
     }
 
-    // ✅ Error response method
-    private void sendErrorResponse(HttpServletResponse response, int status, String message) throws IOException 
-    {
-        response.setStatus(status);
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
+    filterChain.doFilter(request, response);
+}
+```
 
-        String error = (status == 401) ? "Unauthorized" : "Forbidden";
-
-        String jsonResponse = "{\"error\":\"" + error + "\",\"message\":\"" + message + "\"}";
-
-        response.getWriter().write(jsonResponse);
-        response.getWriter().flush();
-    }
 }
