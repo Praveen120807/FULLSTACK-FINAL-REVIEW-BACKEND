@@ -9,106 +9,70 @@ import org.springframework.web.bind.annotation.*;
 import com.klef.fsad.sdp.dto.AuthRequestDTO;
 import com.klef.fsad.sdp.entity.Admin;
 import com.klef.fsad.sdp.entity.User;
-import com.klef.fsad.sdp.security.JwtUtil;
 import com.klef.fsad.sdp.service.AdminService;
 import com.klef.fsad.sdp.service.UserService;
 
 @RestController
-@RequestMapping("auth")
+@RequestMapping("/auth")
 @CrossOrigin("*")
-public class AuthController 
-{
+public class AuthController {
+
     @Autowired
     private AdminService adminService;
 
     @Autowired
     private UserService userService;
 
-    @Autowired
-    private JwtUtil jwtUtil;
-
-    // USER LOGIN
+    // USER LOGIN (NO JWT)
     @PostMapping("/login")
-    public ResponseEntity<?> userlogin(
-            @RequestBody AuthRequestDTO request)
-    {
-        try
-        {
+    public ResponseEntity<?> userlogin(@RequestBody AuthRequestDTO request) {
+        try {
             User user = userService.verifyUserLogin(
                     request.getLogin(),
                     request.getPassword()
             );
 
-            if(user != null)
-            {
-                String token =
-                        jwtUtil.generateToken(
-                                user.getUsername());
-
+            if (user != null) {
                 return ResponseEntity.ok(
                         Map.of(
-                                "token", token,
-                                "role", "USER",
-                                "username",
-                                user.getUsername()
+                                "message", "Login Success",
+                                "username", user.getUsername(),
+                                "role", "USER"
                         )
                 );
-            }
-            else
-            {
-                return ResponseEntity
-                        .status(401)
+            } else {
+                return ResponseEntity.status(401)
                         .body("Invalid User Credentials");
             }
-        }
-        catch(Exception e)
-        {
-            return ResponseEntity
-                    .status(500)
+        } catch (Exception e) {
+            return ResponseEntity.status(500)
                     .body("Internal Server Error");
         }
     }
 
-    // ADMIN LOGIN
+    // ADMIN LOGIN (NO JWT)
     @PostMapping("/admin-login")
-    public ResponseEntity<?> adminLogin(
-            @RequestBody AuthRequestDTO request)
-    {
-        try
-        {
-            Admin admin =
-                    adminService.verifyAdminLogin(
-                            request.getLogin(),
-                            request.getPassword()
-                    );
+    public ResponseEntity<?> adminLogin(@RequestBody AuthRequestDTO request) {
+        try {
+            Admin admin = adminService.verifyAdminLogin(
+                    request.getLogin(),
+                    request.getPassword()
+            );
 
-            if(admin != null)
-            {
-                String token =
-                        jwtUtil.generateToken(
-                                admin.getUsername()
-                        );
-
+            if (admin != null) {
                 return ResponseEntity.ok(
                         Map.of(
-                                "token", token,
-                                "role", "ADMIN",
-                                "username",
-                                admin.getUsername()
+                                "message", "Admin Login Success",
+                                "username", admin.getUsername(),
+                                "role", "ADMIN"
                         )
                 );
-            }
-            else
-            {
-                return ResponseEntity
-                        .status(401)
+            } else {
+                return ResponseEntity.status(401)
                         .body("Invalid Admin Credentials");
             }
-        }
-        catch(Exception e)
-        {
-            return ResponseEntity
-                    .status(500)
+        } catch (Exception e) {
+            return ResponseEntity.status(500)
                     .body("Internal Server Error");
         }
     }
