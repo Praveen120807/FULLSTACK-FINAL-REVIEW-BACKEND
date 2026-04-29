@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.klef.fsad.sdp.entity.User;
@@ -15,19 +16,29 @@ import com.klef.fsad.sdp.repository.UserRepository;
 @Service
 public class UserServiceImpl implements UserService {
 
-
+```
 @Autowired
 private UserRepository userRepository;
 
+@Autowired
+private PasswordEncoder passwordEncoder; // 🔥 IMPORTANT
+
 @Override
 public String userRegistration(User user) {
+    // 🔥 Encode password before saving
+    user.setPassword(passwordEncoder.encode(user.getPassword()));
     userRepository.save(user);
     return "User registered successfully";
 }
 
 @Override
 public User verifyUserLogin(String username, String pwd) {
-    return userRepository.findByUsernameAndPassword(username, pwd);
+    User user = userRepository.findByUsername(username);
+
+    if (user != null && passwordEncoder.matches(pwd, user.getPassword())) {
+        return user;
+    }
+    return null;
 }
 
 @Override
@@ -70,6 +81,6 @@ public UserDetails loadUserByUsername(String username) throws UsernameNotFoundEx
             List.of(new SimpleGrantedAuthority("USER"))
     );
 }
-
+```
 
 }
