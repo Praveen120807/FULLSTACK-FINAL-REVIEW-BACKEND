@@ -16,7 +16,7 @@ import com.klef.fsad.sdp.repository.UserRepository;
 @Service
 public class UserServiceImpl implements UserService {
 
-```
+
 @Autowired
 private UserRepository userRepository;
 
@@ -81,6 +81,6 @@ public UserDetails loadUserByUsername(String username) throws UsernameNotFoundEx
             List.of(new SimpleGrantedAuthority("USER"))
     );
 }
-```
+
 
 }
