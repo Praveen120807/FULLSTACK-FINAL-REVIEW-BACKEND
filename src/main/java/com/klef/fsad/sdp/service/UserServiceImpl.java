@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.klef.fsad.sdp.entity.User;
@@ -14,67 +15,79 @@ import com.klef.fsad.sdp.repository.UserRepository;
 
 @Service
 public class UserServiceImpl implements UserService {
-	
-	@Autowired
-	private UserRepository userRepository;
 
-	@Override
-	public String userRegistration(User user) 
-	{
-	    userRepository.save(user);
-	    return "User registered successfully ";
-	}
+```
+@Autowired
+private UserRepository userRepository;
 
-	@Override
-	public User verifyUserLogin(String username, String pwd) 
-	{
-	    return userRepository.findByUsernameAndPassword(username, pwd);
-	}
+@Autowired
+private PasswordEncoder passwordEncoder; // 🔥 IMPORTANT
 
-	@Override
-	public String updateuserProfile(User user) {
-		Optional<User> optional = userRepository.findById(user.getId());
+@Override
+public String userRegistration(User user) 
+{
+    // 🔥 Encode password before saving
+    user.setPassword(passwordEncoder.encode(user.getPassword()));
+    userRepository.save(user);
+    return "User registered successfully";
+}
 
-	    if (optional.isPresent()) {
-	        User u = optional.get();
+@Override
+public User verifyUserLogin(String username, String pwd) 
+{
+    User user = userRepository.findByUsername(username);
 
-	        if(user.getName() != null)
-	            u.setName(user.getName());
+    if(user != null && passwordEncoder.matches(pwd, user.getPassword())) {
+        return user;
+    }
 
-	        if(user.getContact() != null)
-	            u.setContact(user.getContact());
+    return null;
+}
 
-	        userRepository.save(u);
+@Override
+public String updateuserProfile(User user) {
+    Optional<User> optional = userRepository.findById(user.getId());
 
-	        return "User Profile Updated Successfully";
-	    } 
-	    else {
-	        return "User Id not found to update";
-	    }
-	}
-	
-	@Override
-	public User getUserByUsername(String username) 
-	{
-	    return userRepository.findByUsername(username);
-	}
+    if (optional.isPresent()) {
+        User u = optional.get();
 
-	 @Override
-	    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException 
-	    {
-	        User user = userRepository.findByUsername(username);
+        if(user.getName() != null)
+            u.setName(user.getName());
 
-	        if(user == null)
-	        {
-	            throw new UsernameNotFoundException("User not found");
-	        }
+        if(user.getContact() != null)
+            u.setContact(user.getContact());
 
-	        return new org.springframework.security.core.userdetails.User(
-	                user.getUsername(),
-	                user.getPassword(),
-	                List.of(new SimpleGrantedAuthority("USER"))
-	        );
-	    }
+        userRepository.save(u);
 
+        return "User Profile Updated Successfully";
+    } 
+    else {
+        return "User Id not found to update";
+    }
+}
+
+@Override
+public User getUserByUsername(String username) 
+{
+    return userRepository.findByUsername(username);
+}
+
+@Override
+public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException 
+{
+    User user = userRepository.findByUsername(username);
+
+    if(user == null)
+    {
+        throw new UsernameNotFoundException("User not found");
+    }
+
+    return new org.springframework.security.core.userdetails.User(
+            user.getUsername(),
+            user.getPassword(),
+            List.of(new SimpleGrantedAuthority("USER"))
+    );
+}
+```
 
 }
