@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.klef.fsad.sdp.entity.User;
@@ -20,32 +19,15 @@ public class UserServiceImpl implements UserService {
 @Autowired
 private UserRepository userRepository;
 
-@Autowired
-private PasswordEncoder passwordEncoder; // 🔥 IMPORTANT
-
 @Override
-@Autowired
-private PasswordEncoder passwordEncoder;
-
-@Override
-public String userRegistration(User user) 
-{
-    user.setPassword(passwordEncoder.encode(user.getPassword())); // 🔥 encode
+public String userRegistration(User user) {
     userRepository.save(user);
     return "User registered successfully";
 }
 
 @Override
-@Override
-public User verifyUserLogin(String username, String pwd) 
-{
-    User user = userRepository.findByUsername(username);
-
-    if(user != null && passwordEncoder.matches(pwd, user.getPassword())) {
-        return user;
-    }
-
-    return null;
+public User verifyUserLogin(String username, String pwd) {
+    return userRepository.findByUsernameAndPassword(username, pwd);
 }
 
 @Override
@@ -55,34 +37,30 @@ public String updateuserProfile(User user) {
     if (optional.isPresent()) {
         User u = optional.get();
 
-        if(user.getName() != null)
+        if (user.getName() != null)
             u.setName(user.getName());
 
-        if(user.getContact() != null)
+        if (user.getContact() != null)
             u.setContact(user.getContact());
 
         userRepository.save(u);
 
         return "User Profile Updated Successfully";
-    } 
-    else {
+    } else {
         return "User Id not found to update";
     }
 }
 
 @Override
-public User getUserByUsername(String username) 
-{
+public User getUserByUsername(String username) {
     return userRepository.findByUsername(username);
 }
 
 @Override
-public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException 
-{
+public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
     User user = userRepository.findByUsername(username);
 
-    if(user == null)
-    {
+    if (user == null) {
         throw new UsernameNotFoundException("User not found");
     }
 
